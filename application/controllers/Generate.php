@@ -32,12 +32,12 @@ class Generate extends CI_Controller {
         
         function upload()
         {
+            clearstatcache();
             $filename = date('Y-m-d').'_'.$_FILES['file']['name'];
             $config['upload_path']      = './file/';
             $config['file_name']        = $filename;
             $config['allowed_types']    = 'xls|xlsx|csv';
             $config['max_size']         = 20000;
-
             $this->load->library('upload');
             $this->upload->initialize($config);
             
@@ -49,26 +49,25 @@ class Generate extends CI_Controller {
             else
             {
                 $data = array('upload_data' => $this->upload->data());
-                redirect(site_url('generate'), '');
-                echo '<pre>';
-                print_r($data);
-                echo '</pre>';
+//                redirect(site_url('generate'), '');
+//                print_r($data['upload_data']['orig_name']);
+                $this->baca($data['upload_data']['orig_name']);
             }
         }
         
-        function baca() {
-        $file = './file/2016-08-03_02types.xlsx';
+        private function baca($file) {
+        $file = './file/'.$file;
 
-//load the excel library
+// load the excel library
         $this->load->library('PHPExcel');
 
-//read file from path
+// read file from path
         $objPHPExcel = PHPExcel_IOFactory::load($file);
 
-//get only the Cell Collection
+// get only the Cell Collection
         $cell_collection = $objPHPExcel->getActiveSheet()->getCellCollection();
 
-//extract to a PHP readable array format
+// extract to a PHP readable array format
         foreach ($cell_collection as $cell) {
             $column = $objPHPExcel->getActiveSheet()->getCell($cell)->getColumn();
             $row = $objPHPExcel->getActiveSheet()->getCell($cell)->getRow();
@@ -82,12 +81,10 @@ class Generate extends CI_Controller {
             }
         }
 
-//send the data in an array format
+// send the data in an array format
         $data['header'] = $header;
         $data['values'] = $arr_data;
-        echo '<pre>';
-        print_r($data);
-        echo '</pre>';
+        $this->load->view('v_display', $data);
     }
 
 }
